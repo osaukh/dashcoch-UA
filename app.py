@@ -53,11 +53,19 @@ app.layout = html.Div(
                         dcc.Markdown(
                             """Number of COVID-19 cases in Ukraine.
                         Data from [Міністерство Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). Data for Krym from [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
-                        Software by [@skepteis](https://twitter.com/skepteis), adapted to and for Ukraine by [@osaukh](https://twitter.com/osaukh).
+                        Software by [@skepteis](https://twitter.com/skepteis), adapted to and for Ukraine by [@osaukh](https://twitter.com/osaukh). This page uses [Google Analytics](https://analytics.google.com).
                         """
                         )
                     ],
                 ),
+            ],
+        ),
+        html.Div(
+            className="info-container",
+            children=[
+                html.P(
+                    children="Зауважте, що сьогоднішні дані ще не повністю оновлені. / Please be aware, that today's data is not yet completely updated."
+                )
             ],
         ),
         html.Div(

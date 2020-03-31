@@ -57,6 +57,23 @@ g.layer rect {
   background-color: #252e3f;
 }
 
+.info-container {
+  padding: 10px;
+  background-color: #d35400;
+}
+
+.info-container p {
+  color: #fff;
+  margin: 0;
+}
+
+#date-container {
+  font-size: 2em;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 0px !important;
+}
+
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 @import url("https://fonts.googleapis.com/css?family=Playfair+Display");
 

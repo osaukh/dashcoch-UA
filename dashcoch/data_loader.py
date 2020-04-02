@@ -124,8 +124,9 @@ class DataLoader:
     def __get_total_swiss_fatalities(self):
         l = len(self.swiss_fatalities_by_date)
         return (
-            self.swiss_fatalities_by_date.iloc[l - 1].sum()
-            - self.swiss_fatalities_by_date.iloc[l - 1]["УКРАЇНА"]
+#            self.swiss_fatalities_by_date.iloc[l - 1].sum()
+#            - self.swiss_fatalities_by_date.iloc[l - 1]["УКРАЇНА"]
+            self.swiss_fatalities_by_date.iloc[l - 1]["УКРАЇНА"]
         )
 
     def __get_swiss_cases_as_normalized_dict(self):
@@ -161,7 +162,7 @@ class DataLoader:
         df.index = range(0, len(df))
         return df
 
-    def __get_swiss_world_cases_normalized(self, min_prevalence: int = 0.4):
+    def __get_swiss_world_cases_normalized(self, min_prevalence: int = 0.1):
         tmp = self.world_cases.copy()
         tmp["УКРАЇНА"] = pd.Series(self.swiss_cases_as_dict["УКРАЇНА"])
 

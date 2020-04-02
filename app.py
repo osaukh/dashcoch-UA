@@ -69,6 +69,14 @@ app.layout = html.Div(
             ],
         ),
         html.Div(
+            className="info-container",
+            children=[
+                html.P(
+                    children="Починаючи з 2.04, регіональних даних про загиблих людей немає. / Starting from 2.04 no regional data on fatalities is available."
+                )
+            ],
+        ),
+        html.Div(
             className="row",
             children=[
                 html.Div(
@@ -159,7 +167,7 @@ app.layout = html.Div(
         ),
         html.Div(
             children=[
-                "States updated today: ",
+                "Regions updated today: ",
                 html.Span(", ".join(data.updated_cantons)),
             ]
         ),
@@ -210,7 +218,7 @@ app.layout = html.Div(
             ],
         ),
         html.Br(),
-        html.H4(children="Data per State", style={"color": style.theme["accent"]}),
+        html.H4(children="Data per Region", style={"color": style.theme["accent"]}),
         html.Div(
             id="plot-settings-container",
             children=[
@@ -506,7 +514,7 @@ def update_case_world_graph(selected_scale):
             "xaxis": {
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Days Since Prevalence >0.4 per 10,000",
+                "title": "Days Since Prevalence >0.1 per 10,000",
             },
             "yaxis": {
                 "type": selected_scale,
@@ -576,7 +584,7 @@ def update_case_graph(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Cases per State",
+            "title": "Cases per Region",
             "height": 750,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
@@ -609,7 +617,7 @@ def update_case_pc_graph(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Cases per State (per 10,000 Inhabitants)",
+            "title": "Cases per Region (per 10,000 Inhabitants)",
             "height": 750,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
@@ -663,7 +671,7 @@ def update_case_graph_diff(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "New Cases per State",
+            "title": "New Cases per Region",
             "height": 750,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {

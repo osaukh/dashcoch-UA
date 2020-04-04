@@ -21,7 +21,7 @@ parser.read("settings.ini")
 
 meta_tags = [
     # {"name": "viewport", "content": "width=device-width, initial-scale=1"},
-    {"property": "og:title", "content": "COVID-19 Information Ukraine"},
+    {"property": "og:title", "content": "COVID-19 Інформація по Україні"},
     {"property": "og:type", "content": "website"},
     {
         "property": "og:description",
@@ -68,14 +68,13 @@ def get_layout():
             html.Div(
             id="header",
             children=[
-                html.H4(children="COVID-19 Information for Ukraine"),
+                html.H4(children="COVID-19 Інформація по Україні"),
                 html.P(
                     id="description",
                     children=[
                         dcc.Markdown(
-                            """Number of COVID-19 cases in Ukraine.
-                        Data from [Міністерство Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). Data for Krym from [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
-                        Software by [@skepteis](https://twitter.com/skepteis), adapted to and for Ukraine by [@osaukh](https://twitter.com/osaukh). This page uses [Google Analytics](https://analytics.google.com).
+                            """Дані про кількість інфікованих COVID-19 по Україні взяті зі сторінки [Міністерства Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). Дані про кількість летальних випадків по регіонам та Криму взяті зі сторінки [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
+                        Програмне забезпечення [@skepteis](https://twitter.com/skepteis), адаптоване для України [@osaukh](https://twitter.com/osaukh). Ця сторінка використовує [Google Analytics](https://analytics.google.com).
                         """
                         )
                     ],
@@ -102,7 +101,7 @@ def get_layout():
                             children=[
                                 html.P(
                                     className="total-title",
-                                    children="Total Reported Cases",
+                                    children="Всього Інфікованих",
                                 ),
                                 html.Div(
                                     className="total-content",
@@ -115,7 +114,7 @@ def get_layout():
                             children=[
                                 html.P(
                                     className="total-title",
-                                    children="Reported Cases Today",
+                                    children="Нових Випадків",
                                 ),
                                 html.Div(
                                     className="total-content",
@@ -128,7 +127,7 @@ def get_layout():
                             children=[
                                 html.P(
                                     className="total-title",
-                                    children="Total Fatalities"
+                                    children="Летальних Випадків"
                                 ),
                                 html.Div(
                                     className="total-content",
@@ -148,14 +147,14 @@ def get_layout():
                 dcc.RadioItems(
                     id="radio-prevalence",
                     options=[
-                        {"label": "Total Reported Cases", "value": "number"},
-                        {"label": "Newly Reported Cases", "value": "new"},
+                        {"label": "Всього Інфікованих", "value": "number"},
+                        {"label": "Нових Випадків", "value": "new"},
                         {
-                            "label": "Cumulative Prevalence (per 10,000)",
+                            "label": "Кумулятивна поширеність (на 10,000)",
                             "value": "prevalence",
                         },
-                        {"label": "New Fatalities", "value": "new_fatalities"},
-                        {"label": "Total Fatalities", "value": "fatalities"},
+                        {"label": "Нових Летальних Випадків", "value": "new_fatalities"},
+                        {"label": "Всього Летальних Випадків", "value": "fatalities"},
                     ],
                     value="number",
                     labelStyle={
@@ -171,7 +170,7 @@ def get_layout():
             className="slider-container",
             children=[
                 html.P(
-                    id="slider-text", children="Drag the slider to change the date:",
+                    id="slider-text", children="Потягніть повзунок, щоб змінити дату:",
                 ),
                 dcc.Slider(
                     id="slider-date",
@@ -187,7 +186,7 @@ def get_layout():
         ),
         html.Br(),
         html.H4(
-            children="Data for Ukraine", style={"color": style.theme["accent"]}
+            children="Дані по Україні", style={"color": style.theme["accent"]}
         ),
 #        html.Div(
 #            className="info-container",
@@ -203,8 +202,8 @@ def get_layout():
                 dcc.RadioItems(
                     id="radio-scale-switzerland",
                     options=[
-                        {"label": "Linear Scale", "value": "linear"},
-                        {"label": "Logarithmic Scale", "value": "log"},
+                        {"label": "Лінійна шкала", "value": "linear"},
+                        {"label": "Логарифмічна шкала", "value": "log"},
                     ],
                     value="linear",
                     labelStyle={
@@ -245,7 +244,7 @@ def get_layout():
             className="info-container",
             children=[
                 html.P(
-                    children="This plot shows the development of new cases based on total cases. The daily new cases are shown as the yellow line, however, they vary strongly between days. To show a smoother development, the green line shows the total number of cases during a week to each day."
+                    children="На цьому зображенні показан розвиток кількості нових випадків відносно загальної кількості випадків. Щоденні нові випадки показані жовтою лінією. Щоб показати більш плавний графік, зелена лінія показує загальну кількість випадків протягом тижня. / This plot shows the development of new cases based on total cases. The daily new cases are shown as the yellow line, however, they vary strongly between days. To show a smoother development, the green line shows the total number of cases during a week to each day."
                 )
             ],
         ),
@@ -259,7 +258,7 @@ def get_layout():
             ],
         ),
         html.Br(),
-        html.H4(children="Data per Region", style={"color": style.theme["accent"]}),
+        html.H4(children="Дані по Регіонам", style={"color": style.theme["accent"]}),
 #        html.Div(
 #            className="info-container",
 #            children=[
@@ -274,8 +273,8 @@ def get_layout():
                 dcc.RadioItems(
                     id="radio-scale-cantons",
                     options=[
-                        {"label": "Linear Scale", "value": "linear"},
-                        {"label": "Logarithmic Scale", "value": "log"},
+                        {"label": "Лінійна шкала", "value": "linear"},
+                        {"label": "Логарифмічна шкала", "value": "log"},
                     ],
                     value="linear",
                     labelStyle={
@@ -321,7 +320,7 @@ def get_layout():
             className="info-container",
             children=[
                 html.P(
-                    children="This plot shows the development of new cases based on total cases. The daily new cases, however, vary strongly between days. To show a smoother development, the lines show the total number of cases during a week to each day."
+                    children="На цьому зображенні показан розвиток кількості нових випадків відносно загальної кількості випадків. Щоденні нові випадки показані жовтою лінією. Щоб показати більш плавний графік, зелена лінія показує загальну кількість випадків протягом тижня. / This plot shows the development of new cases based on total cases. The daily new cases, however, vary strongly between days. To show a smoother development, the lines show the total number of cases during a week to each day."
                 )
             ],
         ),
@@ -341,7 +340,7 @@ def get_layout():
             children=[
                 html.P(
                     className="slider-text",
-                    children="Drag the slider to change the date:",
+                    children="Потягніть повзунок, щоб змінити дату:",
                 ),
                 dcc.Slider(
                     id="slider-date-cantonal",
@@ -355,14 +354,14 @@ def get_layout():
         ),
         html.Br(),
         html.H4(
-            children="Demographic Correlations",
+            children="Демографічні Співвідношення",
             style={"color": style.theme["accent"]},
         ),
         html.Div(
             className="info-container",
             children=[
                 html.P(
-                    children='The dashed white line shows the correlation between the data of the two axes. The value "r" describes the strength of the correlation, while a p-value of more than 0.05 means that the correlation is not significant.'
+                    children='Штриховою білою лінією показана кореляція між даними двох осей. Значення "r" описує силу кореляції, тоді як p-значення більше 0,05 означає, що кореляція не є істотною. / The dashed white line shows the correlation between the data of the two axes. The value "r" describes the strength of the correlation, while a p-value of more than 0.05 means that the correlation is not significant.'
                 )
             ],
         ),
@@ -379,7 +378,7 @@ def get_layout():
             ],
         ),
         html.Br(),
-        html.H4(children="Raw Data", style={"color": style.theme["accent"]}),
+        html.H4(children="Дані", style={"color": style.theme["accent"]}),
         dash_table.DataTable(
             id="table",
             columns=[{"name": i, "id": i} for i in data.swiss_cases.columns],
@@ -389,11 +388,11 @@ def get_layout():
             id="footer",
             children=[
                 dcc.Markdown(
-                    """Number of COVID-19 cases in Ukraine.
-                    Number of confirmed infected and fatality cases from [Міністерство Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). No data has been taken from news websites, newspapers, etc. Software by [@skepteis](https://twitter.com/skepteis), adapted to and for Ukraine by [@osaukh](https://twitter.com/osaukh).
-                    Ukrainian map from [CARTO](https://murahoid.carto.com/tables/ukr_adm1_1/public).
-                    Ukrainian bed information from [Державна Служба Статистики України](http://www.ukrstat.gov.ua/druk/publicat/kat_u/2018/zb/06/zb_zoz_17.pdf).
-                    Dashboards for other countries: [Switzerland](http://www.corona-data.ch), [Austria](http://dashcoch-at.herokuapp.com).
+                    """Дані про кількість інфікованих COVID-19 по Україні взяті зі сторінки [Міністерства Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). Дані про кількість летальних випадків по регіонам та Криму взяті зі сторінки [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
+                    Програмне забезпечення [@skepteis](https://twitter.com/skepteis), адаптоване для України [@osaukh](https://twitter.com/osaukh). Ця сторінка використовує [Google Analytics](https://analytics.google.com).
+                    Карта України зі сторінки [CARTO](https://murahoid.carto.com/tables/ukr_adm1_1/public).
+                    Інформація про кількість лікарняних ліжкок зі сторінки [Державна Служба Статистики України](http://www.ukrstat.gov.ua/druk/publicat/kat_u/2018/zb/06/zb_zoz_17.pdf).
+                    Інформаційні дошки інших країн: [Швейцарія](http://www.corona-data.ch), [Австрія](http://dashcoch-at.herokuapp.com).
                     """
                 )
             ],
@@ -539,15 +538,15 @@ def update_case_ch_graph(selected_scale):
             },
         ],
         "layout": {
-            "title": "Total Reported Cases Ukraine",
+            "title": "Всього Інфікованих по Україні",
             "height": 400,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Дата"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Reported Cases",
+                "title": "Всього Інфікованих",
             },
             "hovermode": "closest",
             "dragmode": False,
@@ -569,32 +568,32 @@ def update_caseincrease_ch_graph(selected_scale):
                 "x": data.swiss_cases.iloc[6:-1]["УКРАЇНА"],
                 "y": data.moving_total["УКРАЇНА"][6:-1],
                 "mode": "lines+markers",
-                "name": "New Cases During<br>the Last Week",
+                "name": "Нових випадків<br>за останній тиждень",
                 "marker": {"color": style.theme["foreground"]},
                 "text": data.moving_total["date_label"][6:-1],
-                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> new cases<br>"
-                + "between <b>%{text}</b><br>"
+                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> нових випадків<br>"
+                + "між <b>%{text}</b><br>"
                 + "<extra></extra>",
             },
             {
                 "x": data.swiss_cases.iloc[6:-1]["УКРАЇНА"],
                 "y": data.swiss_cases_by_date_diff["УКРАЇНА"][6:-1],
                 "mode": "lines+markers",
-                "name": "Daily new Cases",
+                "name": "Нових випадків щоденно",
                 "marker": {"color": style.theme["yellow"]},
                 "text": data.swiss_cases_by_date_diff["date_label"][6:-1],
-                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> new cases<br>"
-                + "on <b>%{text}</b><br>"
+                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> нових випадків<br>"
+                + "на <b>%{text}</b><br>"
                 + "<extra></extra>",
             },
         ],
         "layout": {
-            "title": "Newly Reported Cases",
+            "title": "Швидкість Поширення",
             "height": 700,
             "xaxis": {
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Total Cases",
+                "title": "Всього Інфікованих",
                 "type": "log",
             },
             "yaxis": {
@@ -602,7 +601,7 @@ def update_caseincrease_ch_graph(selected_scale):
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Newly Reported Cases",
+                "title": "Нових Випадків",
             },
             "legend": {
                 "x": 0.015,
@@ -638,15 +637,15 @@ def update_fatalities_ch_graph(selected_scale):
             }
         ],
         "layout": {
-            "title": "Total Fatalities Ukraine",
+            "title": "Всього Летальних Випадків по Україні",
             "height": 400,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Дата"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Fatalities",
+                "title": "Летальних Випадків",
             },
             "hovermode": "closest",
             "dragmode": False,
@@ -678,18 +677,18 @@ def update_case_world_graph(selected_scale):
             if country != "Day"
         ],
         "layout": {
-            "title": "Cumulative Prevalence per 10,000 Inhabitants",
+            "title": "Кумулятивна поширеність (на 10,000 жителів)",
             "height": 400,
             "xaxis": {
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Days Since Prevalence >0.1 per 10,000",
+                "title": "Дні з моменту поширення >0.1 на 10,000",
             },
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Reported Cases / Population * 10,000",
+                "title": "К-сть Інфікованих / Населення * 10,000",
             },
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
@@ -718,15 +717,15 @@ def update_fatalities_world_graph(selected_scale):
             }
         ],
         "layout": {
-            "title": "Case Fatality Ratios (Fatalities / Reported Cases)",
+            "title": "Летальність (к-сть загиблих / к-сть інфікованих)",
             "height": 400,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Country"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Країна"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Fatalities / Reported Cases",
+                "title": "К-сть Загиблих / К-сть Інфікованих",
             },
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
@@ -757,14 +756,14 @@ def update_case_graph(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Cases per Region",
+            "title": "Інфікованих по Регіонам",
             "height": 700,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Дата"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Reported Cases",
+                "title": "Інфікованих",
             },
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
@@ -792,14 +791,14 @@ def update_case_pc_graph(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Cases per Region (per 10,000 Inhabitants)",
+            "title": "Поширеність по регіонам (на 10,000 жителів)",
             "height": 700,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Дата"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Reported Cases / Population * 10,000",
+                "title": "К-сть Інфікованих / Населення * 10,000",
             },
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
@@ -848,14 +847,14 @@ def update_case_graph_diff(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Newly Reported Cases per Region",
+            "title": "Нових Випадків по Регіонам",
             "height": 700,
-            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
+            "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Дата"},
             "yaxis": {
                 "type": "linear",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Reported Cases",
+                "title": "Інфікованих",
             },
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
@@ -923,24 +922,24 @@ def update_prevalence_density_graph(selected_cantons):
                 },
                 "hoverinfo": "text",
                 "hovertext": f"<span style='font-size:2.0em'><b>{canton}</b></span><br>"
-                + f"Prevalence: <b>{data.swiss_cases_by_date_filled_per_capita.iloc[-1][canton]:.3f}</b><br>"
-                + f"Population Density: <b>{data.swiss_demography['Density'][canton]:.0f}</b> Inhabitants / km<sup>2</sup><br>"
-                + f"Cases: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
+                + f"Поширеність: <b>{data.swiss_cases_by_date_filled_per_capita.iloc[-1][canton]:.3f}</b><br>"
+                + f"Щільність Населення: <b>{data.swiss_demography['Density'][canton]:.0f}</b> Inhabitants / km<sup>2</sup><br>"
+                + f"Інфікованих: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
             }
             for _, canton in enumerate(data.swiss_cases_as_dict)
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Prevalence vs Population Density",
+            "title": "Поширеність та Щільність Населення",
             "hovermode": "closest",
             "height": 700,
             "xaxis": {
                 "type": "log",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Population Density [Inhabitants/km2 Settlement Area]",
+                "title": "Щільність Населення [мешканців / км2]",
             },
-            "yaxis": {"showgrid": True, "color": "#ffffff", "title": "Prevalence",},
+            "yaxis": {"showgrid": True, "color": "#ffffff", "title": "Поширеність",},
 #            "annotations": [
 #                {
 #                    "x": data.prevalence_density_regression["x"][1],
@@ -976,14 +975,14 @@ def update_prevalence_density_graph(selected_cantons):
 def update_cfr_age_graph(selected_cantons):
     return {
         "data": [
-            {
-                "x": [v * 100 for v in data.cfr_age_regression["x"]],
-                "y": data.cfr_age_regression["y"],
-                "mode": "lines",
-                "hoverinfo": "skip",
-                "showlegend": False,
-                "line": {"dash": "dash", "width": 2.0, "color": "#ffffff",},
-            }
+#            {
+#                "x": [v * 100 for v in data.cfr_age_regression["x"]],
+#                "y": data.cfr_age_regression["y"],
+#                "mode": "lines",
+#                "hoverinfo": "skip",
+#                "showlegend": False,
+#                "line": {"dash": "dash", "width": 2.0, "color": "#ffffff",},
+#            }
         ]
         + [
             {
@@ -997,48 +996,48 @@ def update_cfr_age_graph(selected_cantons):
                 },
                 "hoverinfo": "text",
                 "hovertext": f"<span style='font-size:2.0em'><b>{canton}</b></span><br>"
-                + f"Population over 65: <b>{data.swiss_demography['O65'][canton] * 100:.0f}%</b><br>"
-                + f"Case Fatality Ratio: <b>{data.swiss_case_fatality_rates.iloc[-1][canton]:.3f}</b><br>"
-                + f"Cases: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
+                + f"Відсоток Населення >65 Років: <b>{data.swiss_demography['O65'][canton] * 100:.0f}%</b><br>"
+                + f"Летальність: <b>{data.swiss_case_fatality_rates.iloc[-1][canton]:.3f}</b><br>"
+                + f"Інфікованих: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
             }
             for _, canton in enumerate(data.swiss_cases_normalized_as_dict)
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Case Fatality Ratio vs Population over 65",
+            "title": "Летальність та Відсоток Населення >65 Років",
             "hovermode": "closest",
             "height": 700,
             "xaxis": {
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Population over 65 [%]",
+                "title": "Відсоток населення >65 років [%]",
             },
             "yaxis": {
                 "type": "linear",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Case Fatality Ratio",
+                "title": "Летальність",
             },
-            "annotations": [
-                {
-                    "x": data.cfr_age_regression["x"][1] * 100,
-                    "y": data.cfr_age_regression["y"][1],
-                    "xref": "x",
-                    "yref": "y",
-                    "text": "r: "
-                    + str(round(data.cfr_age_regression["r_value"], 2))
-                    + "<br>"
-                    + "p-value: "
-                    + str(round(data.cfr_age_regression["p_value"], 2)),
-                    "showarrow": True,
-                    "arrowhead": 4,
-                    "ax": -50,
-                    "ay": -50,
-                    "font": {"size": 12, "color": "#ffffff",},
-                    "arrowcolor": "#ffffff",
-                    "align": "left",
-                }
-            ],
+#            "annotations": [
+#                {
+#                    "x": data.cfr_age_regression["x"][1] * 100,
+#                    "y": data.cfr_age_regression["y"][1],
+#                    "xref": "x",
+#                    "yref": "y",
+#                    "text": "r: "
+#                    + str(round(data.cfr_age_regression["r_value"], 2))
+#                    + "<br>"
+#                    + "p-value: "
+#                    + str(round(data.cfr_age_regression["p_value"], 2)),
+#                    "showarrow": True,
+#                    "arrowhead": 4,
+#                    "ax": -50,
+#                    "ay": -50,
+#                    "font": {"size": 12, "color": "#ffffff",},
+#                    "arrowcolor": "#ffffff",
+#                    "align": "left",
+#                }
+#            ],
             "dragmode": False,
             "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],

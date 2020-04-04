@@ -103,12 +103,12 @@ window.dash_clientside.clientside = {
     return {
       data: traces,
       layout: {
-        title: "Newly Reported Cases",
+        title: "Швидкість Поширення",
         height: 700,
         xaxis: {
           showgrid: true,
           color: "#ffffff",
-          title: "Total Cases",
+          title: "Всього Інфікованих",
           type: "log",
           range: [0, Math.log10(x_max) * 1.05]
         },
@@ -117,7 +117,7 @@ window.dash_clientside.clientside = {
           showgrid: true,
           color: "#ffffff",
           rangemode: "tozero",
-          title: "Newly Reported Cases",
+          title: "Нових Випадків",
           range: [0, Math.log10(y_max) * 1.05]
         },
         legend: {

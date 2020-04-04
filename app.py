@@ -60,14 +60,14 @@ app.layout = html.Div(
                 ),
             ],
         ),
-        html.Div(
-            className="info-container",
-            children=[
-                html.P(
-                    children="Зауважте, що сьогоднішні дані ще не повністю оновлені. / Please be aware, that today's data is not yet completely updated."
-                )
-            ],
-        ),
+#        html.Div(
+#            className="info-container",
+#            children=[
+#                html.P(
+#                    children="Зауважте, що сьогоднішні дані ще не повністю оновлені. / Please be aware, that today's data is not yet completely updated."
+#                )
+#            ],
+#        ),
         html.Div(
             className="info-container",
             children=[

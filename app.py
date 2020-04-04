@@ -1,32 +1,44 @@
 # -*- coding: utf-8 -*-
+import time
 import i18n
 from dashcoch import DataLoader, StyleLoader
 import math
 from configparser import ConfigParser
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pytz import timezone
 import geojson
 import dash
 import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, ClientsideFunction
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
+#external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 parser = ConfigParser()
 parser.read("settings.ini")
 
-data = DataLoader(parser)
-style = StyleLoader()
+meta_tags = [
+    # {"name": "viewport", "content": "width=device-width, initial-scale=1"},
+    {"property": "og:title", "content": "COVID-19 Information Ukraine"},
+    {"property": "og:type", "content": "website"},
+    {
+        "property": "og:description",
+        "content": "Latest updates of COVID-19 virus development in Ukraine",
+    },
+    {"property": "og:url", "content": "http://dashcoch-ua.herokuapp.com"},
+]
 
-
-#
-# General app settings
-#
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(
+    __name__,
+#    external_scripts=external_scripts,
+    # external_stylesheets=external_stylesheets,
+    meta_tags=meta_tags,
+)
 server = app.server
-app.title = "Ukraine COVID19 Tracker"
+
+style = StyleLoader()
 
 # google-analytics
 app.scripts.config.serve_locally = False
@@ -37,16 +49,26 @@ app.scripts.append_script({
     'external_url': 'http://dashcoch-ua.herokuapp.com/assets/gtag.js'
 })
 
+def get_data():
+    global data
+    data = DataLoader(parser)
+    
+get_data()
+
+app.title = "Ukraine COVID19 Tracker"
+
 #
 # Show the data
 #
-app.layout = html.Div(
-    id="main",
-    children=[
-        html.Div(
+def get_layout():
+    return html.Div(
+        id="main",
+        children=[
+            dcc.Location(id="url", refresh=False),
+            html.Div(
             id="header",
             children=[
-                html.H4(children="COVID-19 Cases Ukraine"),
+                html.H4(children="COVID-19 Information for Ukraine"),
                 html.P(
                     id="description",
                     children=[
@@ -68,14 +90,7 @@ app.layout = html.Div(
 #                )
 #            ],
 #        ),
-        html.Div(
-            className="info-container",
-            children=[
-                html.P(
-                    children="Починаючи з 2.04, регіональних даних про загиблих людей немає. / Starting from 2.04 no regional data on fatalities is available."
-                )
-            ],
-        ),
+        html.Br(),
         html.Div(
             className="row",
             children=[
@@ -112,7 +127,8 @@ app.layout = html.Div(
                             className="total-container",
                             children=[
                                 html.P(
-                                    className="total-title", children="Total Fatalities"
+                                    className="total-title",
+                                    children="Total Fatalities"
                                 ),
                                 html.Div(
                                     className="total-content",
@@ -134,7 +150,10 @@ app.layout = html.Div(
                     options=[
                         {"label": "Total Reported Cases", "value": "number"},
                         {"label": "Newly Reported Cases", "value": "new"},
-                        {"label": "Prevalence (per 10,000)", "value": "prevalence"},
+                        {
+                            "label": "Cumulative Prevalence (per 10,000)",
+                            "value": "prevalence",
+                        },
                         {"label": "New Fatalities", "value": "new_fatalities"},
                         {"label": "Total Fatalities", "value": "fatalities"},
                     ],
@@ -146,6 +165,7 @@ app.layout = html.Div(
                 ),
             ],
         ),
+        html.Div(id="date-container", className="slider-container"),
         html.Div(children=[dcc.Graph(id="graph-map", config={"staticPlot": True},),]),
         html.Div(
             className="slider-container",
@@ -165,16 +185,18 @@ app.layout = html.Div(
                 ),
             ],
         ),
-        html.Div(
-            children=[
-                "Regions updated today: ",
-                html.Span(", ".join(data.updated_cantons)),
-            ]
-        ),
         html.Br(),
         html.H4(
             children="Data for Ukraine", style={"color": style.theme["accent"]}
         ),
+#        html.Div(
+#            className="info-container",
+#            children=[
+#                html.P(
+#                    children="Please be aware, that the flattening of the curves can be misleading, as today's data is not yet completely updated."
+#                )
+#            ],
+#        ),
         html.Div(
             className="slider-container",
             children=[
@@ -200,16 +222,17 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     className="six columns",
-                    children=[dcc.Graph(id="case-world-graph")],
+                    children=[dcc.Graph(id="fatalities-ch-graph")],
                 ),
             ],
         ),
+        html.Br(),
         html.Div(
             className="row",
             children=[
                 html.Div(
                     className="six columns",
-                    children=[dcc.Graph(id="fatalities-ch-graph")],
+                    children=[dcc.Graph(id="case-world-graph")],
                 ),
                 html.Div(
                     className="six columns",
@@ -218,7 +241,33 @@ app.layout = html.Div(
             ],
         ),
         html.Br(),
+        html.Div(
+            className="info-container",
+            children=[
+                html.P(
+                    children="This plot shows the development of new cases based on total cases. The daily new cases are shown as the yellow line, however, they vary strongly between days. To show a smoother development, the green line shows the total number of cases during a week to each day."
+                )
+            ],
+        ),
+        html.Div(
+            className="row",
+            children=[
+                html.Div(
+                    className="twelve columns",
+                    children=[dcc.Graph(id="caseincrease-ch-graph")],
+                ),
+            ],
+        ),
+        html.Br(),
         html.H4(children="Data per Region", style={"color": style.theme["accent"]}),
+#        html.Div(
+#            className="info-container",
+#            children=[
+#                html.P(
+#                    children="Please be aware, that the flattening of the curves can be misleading, as today's data is not yet completely updated."
+#                )
+#            ],
+#        ),
         html.Div(
             id="plot-settings-container",
             children=[
@@ -268,8 +317,54 @@ app.layout = html.Div(
             ],
         ),
         html.Br(),
+        html.Div(
+            className="info-container",
+            children=[
+                html.P(
+                    children="This plot shows the development of new cases based on total cases. The daily new cases, however, vary strongly between days. To show a smoother development, the lines show the total number of cases during a week to each day."
+                )
+            ],
+        ),
+        html.Div(id="date-container-cantonal", className="slider-container"),
+        html.Div(id="caseincrease-cantonal-data", style={"display": "none"}),
+        html.Div(
+            className="row",
+            children=[
+                html.Div(
+                    className="twelve columns",
+                    children=[dcc.Graph(id="caseincrease-cantonal-graph")],
+                ),
+            ],
+        ),
+        html.Div(
+            className="slider-container",
+            children=[
+                html.P(
+                    className="slider-text",
+                    children="Drag the slider to change the date:",
+                ),
+                dcc.Slider(
+                    id="slider-date-cantonal",
+                    min=0,
+                    max=len(data.swiss_cases["Date"]) - 1,
+                    step=1,
+                    value=len(data.moving_total) - 1,
+                    updatemode="drag",
+                ),
+            ],
+        ),
+        html.Br(),
         html.H4(
-            children="Demographic Correlations", style={"color": style.theme["accent"]}
+            children="Demographic Correlations",
+            style={"color": style.theme["accent"]},
+        ),
+        html.Div(
+            className="info-container",
+            children=[
+                html.P(
+                    children='The dashed white line shows the correlation between the data of the two axes. The value "r" describes the strength of the correlation, while a p-value of more than 0.05 means that the correlation is not significant.'
+                )
+            ],
         ),
         html.Div(
             className="row",
@@ -306,49 +401,65 @@ app.layout = html.Div(
     ],
 )
 
+app.layout = get_layout
+
 # -------------------------------------------------------------------------------
 # Callbacks
 # -------------------------------------------------------------------------------
+@app.callback(
+    dash.dependencies.Output("date-container", "children"),
+    [dash.dependencies.Input("slider-date", "value")],
+)
+def update_map_date(selected_date_index):
+    d = date.fromisoformat(data.swiss_cases["Date"].iloc[selected_date_index])
+    return d.strftime("%d. %m. %Y")
+
+
 @app.callback(
     Output("graph-map", "figure"),
     [Input("slider-date", "value"), Input("radio-prevalence", "value")],
 )
 def update_graph_map(selected_date_index, mode):
+    d = data.swiss_cases["Date"].iloc[selected_date_index]
     date = data.swiss_cases["Date"].iloc[selected_date_index]
 
     map_data = data.swiss_cases_by_date_filled
     labels = [
-        canton + ": " + str(int(map_data[canton][date]))
+        canton + ": " + str(int(map_data[canton][d]))
+        if not math.isnan(float(map_data[canton][d]))
+        else ""
         for canton in data.cantonal_centres
     ]
 
     if mode == "prevalence":
         map_data = data.swiss_cases_by_date_filled_per_capita
         labels = [
-            canton + ": " + str(round((map_data[canton][date]), 1))
+            canton + ": " + str(round((map_data[canton][d]), 1))
+            if not math.isnan(float(map_data[canton][d]))
+            else ""
             for canton in data.cantonal_centres
         ]
     elif mode == "fatalities":
-        map_data = data.swiss_fatalities_by_date
+        map_data = data.swiss_fatalities_by_date_filled
         labels = [
-            canton + ": " + str(int(map_data[canton][date]))
-            if not math.isnan(float(map_data[canton][date]))
+            canton + ": " + str(int(map_data[canton][d]))
+            if not math.isnan(float(map_data[canton][d]))
             else ""
             for canton in data.cantonal_centres
         ]
     elif mode == "new":
         map_data = data.swiss_cases_by_date_diff
         labels = [
-            canton + ": " + str(int(map_data[canton][date]))
-            if not math.isnan(float(map_data[canton][date]))
+            canton + ": " + str(int(map_data[canton][d]))
+            if not math.isnan(float(map_data[canton][d]))
             else ""
             for canton in data.cantonal_centres
         ]
     elif mode == "new_fatalities":
         map_data = data.swiss_fatalities_by_date_diff
         labels = [
-            canton + ": " + str(int(map_data[canton][date]))
-            if not math.isnan(float(map_data[canton][date]))
+            canton + ": " + str(int(map_data[canton][d]))
+            if not math.isnan(float(map_data[canton][d]))
             else ""
             for canton in data.cantonal_centres
         ]
@@ -369,23 +480,24 @@ def update_graph_map(selected_date_index, mode):
                 "type": "scattergeo",
                 "textfont": {
                     "family": "Arial, sans-serif",
-                    "size": 18,
+                    "size": 16,
                     "color": "white",
                     "weight": "bold",
                 },
             },
             {
                 "type": "choropleth",
+                "showscale": False,
                 "locations": data.canton_labels,
-                "z": [map_data[canton][date] for canton in map_data if canton != "УКРАЇНА"],
+                "z": [map_data[canton][d] for canton in map_data if canton != "УКРАЇНА"],
                 "colorscale": style.turbo,
                 "geojson": "/assets/ukraine.geojson",
                 "marker": {"line": {"width": 0.0, "color": "#08302A"}},
-                "colorbar": {
-                    "thickness": 10,
-                    "bgcolor": "#252e3f",
-                    "tickfont": {"color": "white"},
-                },
+#                "colorbar": {
+#                    "thickness": 10,
+#                    "bgcolor": "#252e3f",
+#                    "tickfont": {"color": "white"},
+#                },
             },
         ],
         "layout": {
@@ -404,20 +516,7 @@ def update_graph_map(selected_date_index, mode):
             "height": 600,
             "plot_bgcolor": "#252e3f",
             "paper_bgcolor": "#252e3f",
-        }
-        # "layout": {
-        #     "mapbox": {
-        #         "accesstoken": "pk.eyJ1IjoiZGFlbnVwcm9ic3QiLCJhIjoiY2s3eDR2dmRyMDg0ajN0cDlkaDNmM3J0NyJ9.tcJPFQkbsVGlWpyQaKPtiw",
-        #         "style": "mapbox://styles/plotlymapbox/cjvprkf3t1kns1cqjxuxmwixz",
-        #         "center": {"lat": 46.8181877, "lon": 8.2275124},
-        #         "pitch": 0,
-        #         "zoom": 7,
-        #     },
-        #     "margin": {"l": 0, "r": 0, "t": 0, "b": 0},
-        #     "height": 600,
-        #     "plot_bgcolor": "#1f2630",
-        #     "paper_bgcolor": "#1f2630",
-        # },
+        },
     }
 
 
@@ -431,15 +530,16 @@ def update_case_ch_graph(selected_scale):
     return {
         "data": [
             {
-                "x": data.swiss_cases_as_dict["Date"],
-                "y": data.swiss_cases_as_dict["УКРАЇНА"],
+                "x": data.swiss_cases["Date"],
+                "y": data.swiss_cases["УКРАЇНА"],
                 "name": "УКРАЇНА",
-                "marker": {"color": style.theme["foreground"]},
                 "type": "bar",
-            }
+                "marker": {"color": style.theme["foreground"]},
+                "showlegend": False,
+            },
         ],
         "layout": {
-            "title": "Total Cases Ukraine",
+            "title": "Total Reported Cases Ukraine",
             "height": 400,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
@@ -447,14 +547,79 @@ def update_case_ch_graph(selected_scale):
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Cases",
+                "title": "Reported Cases",
             },
+            "hovermode": "closest",
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
         },
     }
-
+    
+@app.callback(
+    Output("caseincrease-ch-graph", "figure"),
+    [Input("radio-scale-switzerland", "value")],
+)
+def update_caseincrease_ch_graph(selected_scale):
+    return {
+        "data": [
+            {
+                "x": data.swiss_cases.iloc[6:-1]["УКРАЇНА"],
+                "y": data.moving_total["УКРАЇНА"][6:-1],
+                "mode": "lines+markers",
+                "name": "New Cases During<br>the Last Week",
+                "marker": {"color": style.theme["foreground"]},
+                "text": data.moving_total["date_label"][6:-1],
+                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> new cases<br>"
+                + "between <b>%{text}</b><br>"
+                + "<extra></extra>",
+            },
+            {
+                "x": data.swiss_cases.iloc[6:-1]["УКРАЇНА"],
+                "y": data.swiss_cases_by_date_diff["УКРАЇНА"][6:-1],
+                "mode": "lines+markers",
+                "name": "Daily new Cases",
+                "marker": {"color": style.theme["yellow"]},
+                "text": data.swiss_cases_by_date_diff["date_label"][6:-1],
+                "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> new cases<br>"
+                + "on <b>%{text}</b><br>"
+                + "<extra></extra>",
+            },
+        ],
+        "layout": {
+            "title": "Newly Reported Cases",
+            "height": 700,
+            "xaxis": {
+                "showgrid": True,
+                "color": "#ffffff",
+                "title": "Total Cases",
+                "type": "log",
+            },
+            "yaxis": {
+                "type": "log",
+                "showgrid": True,
+                "color": "#ffffff",
+                "rangemode": "tozero",
+                "title": "Newly Reported Cases",
+            },
+            "legend": {
+                "x": 0.015,
+                "y": 1,
+                "traceorder": "normal",
+                "font": {"family": "sans-serif", "color": "white"},
+                "bgcolor": style.theme["background"],
+                "bordercolor": style.theme["accent"],
+                "borderwidth": 1,
+            },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
+            "plot_bgcolor": style.theme["background"],
+            "paper_bgcolor": style.theme["background"],
+            "font": {"color": style.theme["foreground"]},
+        },
+    }
 
 @app.callback(
     Output("fatalities-ch-graph", "figure"),
@@ -467,8 +632,9 @@ def update_fatalities_ch_graph(selected_scale):
                 "x": data.swiss_fatalities["Date"],
                 "y": data.swiss_fatalities["УКРАЇНА"],
                 "name": "УКРАЇНА",
-                "marker": {"color": style.theme["foreground"]},
                 "type": "bar",
+                "marker": {"color": style.theme["blue"]},
+                "showlegend": False,
             }
         ],
         "layout": {
@@ -482,6 +648,9 @@ def update_fatalities_ch_graph(selected_scale):
                 "rangemode": "tozero",
                 "title": "Fatalities",
             },
+            "hovermode": "closest",
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -509,7 +678,7 @@ def update_case_world_graph(selected_scale):
             if country != "Day"
         ],
         "layout": {
-            "title": "Prevalence per 10,000 Inhabitants",
+            "title": "Cumulative Prevalence per 10,000 Inhabitants",
             "height": 400,
             "xaxis": {
                 "showgrid": True,
@@ -520,8 +689,10 @@ def update_case_world_graph(selected_scale):
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Cases / Population * 10,000",
+                "title": "Reported Cases / Population * 10,000",
             },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -547,7 +718,7 @@ def update_fatalities_world_graph(selected_scale):
             }
         ],
         "layout": {
-            "title": "Case Fatality Rates (Fatalities / Cases)",
+            "title": "Case Fatality Ratios (Fatalities / Reported Cases)",
             "height": 400,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Country"},
             "yaxis": {
@@ -555,8 +726,10 @@ def update_fatalities_world_graph(selected_scale):
                 "showgrid": True,
                 "color": "#ffffff",
                 "rangemode": "tozero",
-                "title": "Fatalities / Cases",
+                "title": "Fatalities / Reported Cases",
             },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -585,14 +758,16 @@ def update_case_graph(selected_cantons, selected_scale):
         ],
         "layout": {
             "title": "Cases per Region",
-            "height": 750,
+            "height": 700,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Cases",
+                "title": "Reported Cases",
             },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -618,14 +793,16 @@ def update_case_pc_graph(selected_cantons, selected_scale):
         ],
         "layout": {
             "title": "Cases per Region (per 10,000 Inhabitants)",
-            "height": 750,
+            "height": 700,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
                 "type": selected_scale,
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Cases / Population * 10,000",
+                "title": "Reported Cases / Population * 10,000",
             },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -671,15 +848,17 @@ def update_case_graph_diff(selected_cantons, selected_scale):
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "New Cases per Region",
-            "height": 750,
+            "title": "Newly Reported Cases per Region",
+            "height": 700,
             "xaxis": {"showgrid": True, "color": "#ffffff", "title": "Date"},
             "yaxis": {
                 "type": "linear",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Cases",
+                "title": "Reported Cases",
             },
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -687,6 +866,31 @@ def update_case_graph_diff(selected_cantons, selected_scale):
         },
     }
 
+app.clientside_callback(
+    ClientsideFunction(
+        namespace="clientside", function_name="update_caseincrease_cantonal_graph"
+    ),
+    Output("caseincrease-cantonal-graph", "figure"),
+    [
+        Input("dropdown-cantons", "value"),
+        Input("radio-scale-cantons", "value"),
+        Input("slider-date-cantonal", "value"),
+        Input("caseincrease-cantonal-graph", "hoverData"),
+    ],
+)
+
+
+@app.callback(
+    Output("caseincrease-cantonal-data", "children"), [Input("url", "pathname")]
+)
+def store_caseincrease_cantona_data(value):
+    return (
+        '{"swiss_cases_by_date_filled": '
+        + data.swiss_cases_by_date_filled.to_json(date_format="iso", orient="columns")
+        + ', "moving_total":'
+        + data.moving_total.to_json(date_format="iso", orient="columns")
+        + "}"
+    )
 
 #
 # Demographic Correlations
@@ -697,12 +901,31 @@ def update_case_graph_diff(selected_cantons, selected_scale):
 def update_prevalence_density_graph(selected_cantons):
     return {
         "data": [
+#            {
+#                "x": data.prevalence_density_regression["x"],
+#                "y": data.prevalence_density_regression["y"],
+#                "mode": "lines",
+#                "hoverinfo": "skip",
+#                "showlegend": False,
+#                "line": {"dash": "dash", "width": 2.0, "color": "#ffffff",},
+#            }
+        ]
+        + [
             {
                 "x": [data.swiss_demography["Density"][canton]],
                 "y": [data.swiss_cases_by_date_filled_per_capita.iloc[-1][canton]],
                 "name": canton,
                 "mode": "markers",
-                "marker": {"color": style.canton_colors[canton], "size": 10.0},
+                "text": canton,
+                "marker": {
+                    "color": style.canton_colors[canton],
+                    "size": data.scaled_cases[canton],
+                },
+                "hoverinfo": "text",
+                "hovertext": f"<span style='font-size:2.0em'><b>{canton}</b></span><br>"
+                + f"Prevalence: <b>{data.swiss_cases_by_date_filled_per_capita.iloc[-1][canton]:.3f}</b><br>"
+                + f"Population Density: <b>{data.swiss_demography['Density'][canton]:.0f}</b> Inhabitants / km<sup>2</sup><br>"
+                + f"Cases: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
             }
             for _, canton in enumerate(data.swiss_cases_as_dict)
             if canton in selected_cantons
@@ -710,13 +933,36 @@ def update_prevalence_density_graph(selected_cantons):
         "layout": {
             "title": "Prevalence vs Population Density",
             "hovermode": "closest",
-            "height": 750,
+            "height": 700,
             "xaxis": {
+                "type": "log",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Population Density [Inhabitants/km2]",
+                "title": "Population Density [Inhabitants/km2 Settlement Area]",
             },
             "yaxis": {"showgrid": True, "color": "#ffffff", "title": "Prevalence",},
+#            "annotations": [
+#                {
+#                    "x": data.prevalence_density_regression["x"][1],
+#                    "y": data.prevalence_density_regression["y"][1],
+#                    "xref": "x",
+#                    "yref": "y",
+#                    "text": "r: "
+#                    + str(round(data.prevalence_density_regression["r_value"], 2))
+#                    + "<br>"
+#                    + "p-value: "
+#                    + str(round(data.prevalence_density_regression["p_value"], 2)),
+#                    "showarrow": True,
+#                    "arrowhead": 4,
+#                    "ax": 50,
+#                    "ay": 50,
+#                    "font": {"size": 12, "color": "#ffffff",},
+#                    "arrowcolor": "#ffffff",
+#                    "align": "left",
+#                }
+#            ],
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},
@@ -731,19 +977,37 @@ def update_cfr_age_graph(selected_cantons):
     return {
         "data": [
             {
+                "x": [v * 100 for v in data.cfr_age_regression["x"]],
+                "y": data.cfr_age_regression["y"],
+                "mode": "lines",
+                "hoverinfo": "skip",
+                "showlegend": False,
+                "line": {"dash": "dash", "width": 2.0, "color": "#ffffff",},
+            }
+        ]
+        + [
+            {
                 "x": [data.swiss_demography["O65"][canton] * 100],
                 "y": [data.swiss_case_fatality_rates.iloc[-1][canton]],
                 "name": canton,
                 "mode": "markers",
-                "marker": {"color": style.canton_colors[canton], "size": 10.0},
+                "marker": {
+                    "color": style.canton_colors[canton],
+                    "size": data.scaled_cases[canton],
+                },
+                "hoverinfo": "text",
+                "hovertext": f"<span style='font-size:2.0em'><b>{canton}</b></span><br>"
+                + f"Population over 65: <b>{data.swiss_demography['O65'][canton] * 100:.0f}%</b><br>"
+                + f"Case Fatality Ratio: <b>{data.swiss_case_fatality_rates.iloc[-1][canton]:.3f}</b><br>"
+                + f"Cases: <b>{data.swiss_cases_by_date_filled.iloc[-1][canton]:.0f}</b>",
             }
             for _, canton in enumerate(data.swiss_cases_normalized_as_dict)
             if canton in selected_cantons
         ],
         "layout": {
-            "title": "Case Fatality Rate vs Population over 65",
+            "title": "Case Fatality Ratio vs Population over 65",
             "hovermode": "closest",
-            "height": 750,
+            "height": 700,
             "xaxis": {
                 "showgrid": True,
                 "color": "#ffffff",
@@ -753,8 +1017,30 @@ def update_cfr_age_graph(selected_cantons):
                 "type": "linear",
                 "showgrid": True,
                 "color": "#ffffff",
-                "title": "Case Fatality Rate",
+                "title": "Case Fatality Ratio",
             },
+            "annotations": [
+                {
+                    "x": data.cfr_age_regression["x"][1] * 100,
+                    "y": data.cfr_age_regression["y"][1],
+                    "xref": "x",
+                    "yref": "y",
+                    "text": "r: "
+                    + str(round(data.cfr_age_regression["r_value"], 2))
+                    + "<br>"
+                    + "p-value: "
+                    + str(round(data.cfr_age_regression["p_value"], 2)),
+                    "showarrow": True,
+                    "arrowhead": 4,
+                    "ax": -50,
+                    "ay": -50,
+                    "font": {"size": 12, "color": "#ffffff",},
+                    "arrowcolor": "#ffffff",
+                    "align": "left",
+                }
+            ],
+            "dragmode": False,
+            "margin": {"l": 60, "r": 20, "t": 60, "b": 70},
             "plot_bgcolor": style.theme["background"],
             "paper_bgcolor": style.theme["background"],
             "font": {"color": style.theme["foreground"]},

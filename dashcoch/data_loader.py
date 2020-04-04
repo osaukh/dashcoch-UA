@@ -1,8 +1,8 @@
 from configparser import ConfigParser
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import pandas as pd
 from pytz import timezone
-
+from scipy import stats
 
 class DataLoader:
     def __init__(self, parser: ConfigParser):
@@ -22,9 +22,18 @@ class DataLoader:
         self.swiss_cases_by_date = self.swiss_cases.set_index("Date")
         self.swiss_fatalities_by_date = self.swiss_fatalities.set_index("Date")
 
-        self.swiss_cases_by_date_diff = self.swiss_cases_by_date.diff().replace(
+        self.swiss_cases_by_date_filled = self.swiss_cases_by_date.fillna(
+            method="ffill", axis=0
+        )
+
+        self.swiss_cases_by_date_diff = self.swiss_cases_by_date_filled.diff().replace(
             0, float("nan")
         )
+        self.swiss_cases_by_date_diff["date_label"] = [
+            date.fromisoformat(d).strftime("%d. %m.")
+            for d in self.swiss_cases_by_date_diff.index.values
+        ]
+
         self.swiss_fatalities_by_date_diff = self.swiss_fatalities_by_date.diff().replace(
             0, float("nan")
         )
@@ -71,6 +80,14 @@ class DataLoader:
         self.cantonal_centres = self.__get_cantonal_centres()
 
         #
+        # Moving average showing development
+        #
+
+        self.moving_total = self.__get_moving_total(
+            self.swiss_cases_by_date.diff()
+        ).replace(0, float("nan"))
+        
+        #
         # World related data
         #
 
@@ -79,6 +96,20 @@ class DataLoader:
         )
 
         self.swiss_world_cases_normalized = self.__get_swiss_world_cases_normalized()
+        
+        #
+        # Some regression analysis on the data
+        #
+        self.prevalence_density_regression = self.__get_regression(
+            self.swiss_demography["Density"],
+            self.swiss_cases_by_date_filled_per_capita.iloc[-1],
+        )
+
+        self.cfr_age_regression = self.__get_regression(
+            self.swiss_demography["O65"], self.swiss_case_fatality_rates.iloc[-1]
+        )
+
+        self.scaled_cases = self.__get_scaled_cases()
 
     def __get_latest_date(self):
         return self.swiss_cases.iloc[len(self.swiss_cases) - 1]["Date"]
@@ -115,19 +146,10 @@ class DataLoader:
         )
 
     def __get_total_swiss_cases(self):
-        l = len(self.swiss_cases_by_date_filled)
-        return (
-            self.swiss_cases_by_date_filled.iloc[l - 1].sum()
-            - self.swiss_cases_by_date_filled.iloc[l - 1]["УКРАЇНА"]
-        )
+        return self.swiss_cases_by_date_filled.iloc[-1]["УКРАЇНА"]
 
     def __get_total_swiss_fatalities(self):
-        l = len(self.swiss_fatalities_by_date)
-        return (
-#            self.swiss_fatalities_by_date.iloc[l - 1].sum()
-#            - self.swiss_fatalities_by_date.iloc[l - 1]["УКРАЇНА"]
-            self.swiss_fatalities_by_date.iloc[l - 1]["УКРАЇНА"]
-        )
+        return self.swiss_fatalities_by_date_filled.iloc[-1]["УКРАЇНА"]
 
     def __get_swiss_cases_as_normalized_dict(self):
         tmp = [
@@ -176,6 +198,57 @@ class DataLoader:
         tmp.dropna(how="all", inplace=True)
 
         return tmp
+
+    def __get_regression(self, x, y):
+        df = pd.DataFrame([x, y])
+        df = df.dropna(axis=1, how="any")
+        slope, intercept, r_value, p_value, std_err = stats.linregress(
+            df.iloc[0], df.iloc[1]
+        )
+        m = df.iloc[0].min() + (df.iloc[0].max() - df.iloc[0].min()) / 2
+        return {
+            "slope": slope,
+            "intercept": intercept,
+            "r_value": r_value,
+            "p_value": p_value,
+            "std_err": std_err,
+            "x": [df.iloc[0].min(), m, df.iloc[0].max()],
+            "y": [
+                slope * df.iloc[0].min() + intercept,
+                slope * m + intercept,
+                slope * df.iloc[0].max() + intercept,
+            ],
+        }
+
+    def __get_scaled_cases(self):
+        cases = self.swiss_cases_by_date_filled.iloc[-1][0:-1]
+        min_cases = cases.min()
+        max_cases = cases.max()
+        scaled_cases = (cases - min_cases) / (max_cases - min_cases) * (20) + 10
+        return scaled_cases
+
+    def __get_moving_total(self, df, days=7):
+        offset = days - 1
+        df_moving_total = df[0:0]
+        for i in range(0, len(df)):
+            start = max(0, i - offset)
+            d = pd.Series(df.iloc[start : i + 1].sum().to_dict())
+            d.name = df.index[i]
+            df_moving_total = df_moving_total.append(d)
+
+        # Add the label for the date range (previous week)
+        date_labels = []
+        for d in df_moving_total.index.values:
+            today = date.fromisoformat(d)
+            date_labels.append(
+                (today - timedelta(days=7)).strftime("%d. %m.")
+                + " – "
+                + today.strftime("%d. %m.")
+            )
+
+        df_moving_total["date_label"] = date_labels
+
+        return df_moving_total
 
     def __get_world_population(self):
         return {

@@ -1,7 +1,22 @@
+@import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500&display=swap");
+@import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Condensed:300,400,500&display=swap");
+
 html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+}
+
+html {
+  font-size: 62.5%;
+}
+body {
+  font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "IBM Plex Sans", "HelveticaNeue", "Helvetica Neue", Helvetica,
+      Arial, sans-serif;
 }
 
 div#main {
@@ -21,6 +36,43 @@ table tr:hover {
   background-color: #252e3f !important;
 }
 
+#plot-settings-container,
+.slider-container,
+.info-container,
+.dash-graph,
+.total-container {
+  border-right: 2px solid #222;
+  border-bottom: 2px solid #222;
+}
+
+#update-container span {
+  display: inline-block;
+  font-family: "IBM Plex Sans Condensed", "HelveticaNeue", "Helvetica Neue",
+    Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  color: #ffffff;
+  padding-left: 2px;
+  padding-right: 2px;
+  margin: 2px;
+  background-color: #28494d;
+}
+
+#update-container span.False {
+  background-color: #402b36;
+  color: #ddd;
+}
+
+#update-container div {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.rc-slider-mark-text {
+  font-family: "IBM Plex Sans", "HelveticaNeue", "Helvetica Neue", Helvetica,
+    Arial, sans-serif !important;
+  font-weight: 300 !important;
+}
+
 /* Map style */
 g.layer rect {
   fill: #252e3f !important;
@@ -29,22 +81,25 @@ g.layer rect {
 #important {
   color: #c72e10;
   margin-bottom: 10px;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .total-container {
   display: inline-block;
-  padding: 10px;
   margin-right: 20px;
+  margin-bottom: 20px;
   background-color: #252e3f;
 }
 
 .total-container .total-title {
-  font-size: 1.6em;
-  font-weight: bold;
+  padding: 10px;
+  font-size: 1.25em;
+  font-weight: 500;
+  background-color: #2c384d;
 }
 
 .total-container .total-content {
+  padding: 10px;
   color: #2cfec1;
   font-size: 2.5em;
   text-align: center;
@@ -67,10 +122,12 @@ g.layer rect {
   margin: 0;
 }
 
+#date-container-cantonal,
 #date-container {
+  background-color: #2c384d;
   font-size: 2em;
   text-align: center;
-  font-weight: bold;
+  font-weight: 500;
   border-bottom: 0px !important;
 }
 
@@ -303,8 +360,8 @@ body {
   font-size: 1.5rem; /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
-  font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
+  font-family: "IBM Plex Sans", "HelveticaNeue", "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
   color: #7fafdf;
   margin: 0;
 }
@@ -335,7 +392,7 @@ h5,
 h6 {
   margin-top: 0;
   margin-bottom: 0;
-  font-weight: 300;
+  font-weight: 500;
 }
 
 h1 {
@@ -408,7 +465,7 @@ p {
   margin-bottom: 2rem;
 }
 
-#slider-text,
+.slider-text,
 #plot-settings-text,
 #chart-selector {
   margin-bottom: 2rem !important;
@@ -574,6 +631,19 @@ legend {
   margin-bottom: 0;
 }
 
+#radio-scale-switzerland label,
+#radio-scale-cantons label,
+#radio-scale label,
+#radio-prevalence label {
+  margin-right: 2rem;
+  font-size: 1.75rem;
+}
+
+label > input[type="radio"] {
+  position: relative;
+  top: 2px;
+}
+
 fieldset {
   padding: 0;
   border-width: 0;
@@ -581,7 +651,7 @@ fieldset {
 
 input[type="checkbox"],
 input[type="radio"] {
-  display: inline;
+  display: inline-block;
 }
 
 label > .label-body {
@@ -713,15 +783,11 @@ hr {
 /* Slider
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
-#slider-container {
-  background-color: #252e3f;
-  padding: 2rem 6rem 4rem 4rem;
-  height: 12rem;
-}
-
+.slider-container,
 #plot-settings-container {
   background-color: #252e3f;
-  padding: 2rem 6rem 4rem 4rem;
+  padding: 10px;
+  /* height: 12rem; */
 }
 
 .rc-slider-dot-active,
@@ -812,6 +878,15 @@ hr {
 
   #selected-data {
     height: 55rem;
+  }
+}
+
+.total-container .total-title {
+    font-size: 2.25em;
+  }
+
+  .total-container .total-content {
+    font-size: 3.25em;
   }
 }
 
@@ -924,6 +999,11 @@ hr {
 
 #header {
   margin-left: 1.5%;
+}
+
+#header h4 {
+  color: white;
+  margin-bottom: 20px;
 }
 
 div,

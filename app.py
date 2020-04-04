@@ -25,7 +25,7 @@ meta_tags = [
     {"property": "og:type", "content": "website"},
     {
         "property": "og:description",
-        "content": "Latest updates of COVID-19 virus development in Ukraine",
+        "content": "Аналіз поширення COVID-19 в Україні",
     },
     {"property": "og:url", "content": "http://dashcoch-ua.herokuapp.com"},
 ]

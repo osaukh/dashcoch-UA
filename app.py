@@ -244,7 +244,7 @@ def get_layout():
             className="info-container",
             children=[
                 html.P(
-                    children="На цьому зображенні показан розвиток кількості нових випадків відносно загальної кількості випадків. Щоденні нові випадки показані жовтою лінією. Щоб показати більш плавний графік, зелена лінія показує загальну кількість випадків протягом тижня. / This plot shows the development of new cases based on total cases. The daily new cases are shown as the yellow line, however, they vary strongly between days. To show a smoother development, the green line shows the total number of cases during a week to each day."
+                    children="На цьому графіку показано динаміку кількості нових випадків відносно загальної кількості випадків. Щоденні нові випадки показані жовтою лінією. Щоб показати більш плавний графік, зелена лінія показує загальну кількість випадків протягом тижня. / This plot shows the development of new cases based on total cases. The daily new cases are shown as the yellow line, however, they vary strongly between days. To show a smoother development, the green line shows the total number of cases during a week to each day."
                 )
             ],
         ),
@@ -357,14 +357,14 @@ def get_layout():
             children="Демографічні Співвідношення",
             style={"color": style.theme["accent"]},
         ),
-        html.Div(
-            className="info-container",
-            children=[
-                html.P(
-                    children='Штриховою білою лінією показана кореляція між даними двох осей. Значення "r" описує силу кореляції, тоді як p-значення більше 0,05 означає, що кореляція не є істотною. / The dashed white line shows the correlation between the data of the two axes. The value "r" describes the strength of the correlation, while a p-value of more than 0.05 means that the correlation is not significant.'
-                )
-            ],
-        ),
+#        html.Div(
+#            className="info-container",
+#            children=[
+#                html.P(
+#                    children='Штриховою білою лінією показана кореляція між даними двох осей. Значення "r" описує силу кореляції, тоді як p-значення більше 0,05 означає, що кореляція не є істотною. / The dashed white line shows the correlation between the data of the two axes. The value "r" describes the strength of the correlation, while a p-value of more than 0.05 means that the correlation is not significant.'
+#                )
+#            ],
+#        ),
         html.Div(
             className="row",
             children=[
@@ -579,7 +579,7 @@ def update_caseincrease_ch_graph(selected_scale):
                 "x": data.swiss_cases.iloc[6:-1]["УКРАЇНА"],
                 "y": data.swiss_cases_by_date_diff["УКРАЇНА"][6:-1],
                 "mode": "lines+markers",
-                "name": "Нових випадків щоденно",
+                "name": "Нових випадків за добу",
                 "marker": {"color": style.theme["yellow"]},
                 "text": data.swiss_cases_by_date_diff["date_label"][6:-1],
                 "hovertemplate": "<br><span style='font-size:2.0em'><b>%{y:.0f}</b></span> нових випадків<br>"

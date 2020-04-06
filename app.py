@@ -55,7 +55,7 @@ def get_data():
     
 get_data()
 
-app.title = "Ukraine COVID19 Tracker"
+app.title = "COVID-19 Інформація по Україні"
 
 #
 # Show the data

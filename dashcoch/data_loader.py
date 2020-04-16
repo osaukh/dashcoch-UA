@@ -139,10 +139,9 @@ class DataLoader:
         ):
             return 0
 
-        l = len(self.swiss_cases_by_date_filled)
         return (
-            self.swiss_cases_by_date_filled.diff().iloc[l - 1].sum()
-            - self.swiss_cases_by_date_filled.diff().iloc[l - 1]["УКРАЇНА"]
+            self.swiss_cases_by_date_filled.iloc[-1]["УКРАЇНА"]
+            - self.swiss_cases_by_date_filled.iloc[-2]["УКРАЇНА"]
         )
 
     def __get_total_swiss_cases(self):

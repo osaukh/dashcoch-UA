@@ -176,10 +176,10 @@ def get_layout():
                     id="slider-date",
                     min=0,
                     max=len(data.swiss_cases["Date"]) - 1,
-                    marks={
-                        i: date.fromisoformat(d).strftime("%d. %m.")
-                        for i, d in enumerate(data.swiss_cases["Date"])
-                    },
+#                    marks={
+#                        i: date.fromisoformat(d).strftime("%d. %m.")
+#                        for i, d in enumerate(data.swiss_cases["Date"])
+#                    },
                     value=len(data.swiss_cases["Date"]) - 1,
                 ),
             ],

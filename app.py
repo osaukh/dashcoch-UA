@@ -377,18 +377,19 @@ def get_layout():
                 ),
             ],
         ),
-        html.Br(),
-        html.H4(children="Дані", style={"color": style.theme["accent"]}),
-        dash_table.DataTable(
-            id="table",
-            columns=[{"name": i, "id": i} for i in data.swiss_cases.columns],
-            data=data.swiss_cases.to_dict("records"),
-        ),
+#        html.Br(),
+#        html.H4(children="Дані", style={"color": style.theme["accent"]}),
+#        dash_table.DataTable(
+#            id="table",
+#            columns=[{"name": i, "id": i} for i in data.swiss_cases.columns],
+#            data=data.swiss_cases.to_dict("records"),
+#        ),
         html.P(
             id="footer",
             children=[
                 dcc.Markdown(
-                    """Дані про кількість інфікованих COVID-19 по Україні взяті зі сторінки [Міністерства Охорони Здоров'я України ](https://moz.gov.ua/article/news/operativna-informacija-pro-poshirennja-koronavirusnoi-infekcii-2019-ncov-). Дані про кількість летальних випадків по регіонам та Криму взяті зі сторінки [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
+                    """Дані доступні на [GitHub](https://github.com/osaukh/dashcoch-UA).
+                    Дані про кількість інфікованих COVID-19 по Україні взяті зі сторінки [Українська Правда](https://www.pravda.com.ua/cdn/covid-19/cpa/).
                     Програмне забезпечення [@skepteis](https://twitter.com/skepteis), адаптоване для України [@osaukh](https://twitter.com/osaukh). Ця сторінка використовує [Google Analytics](https://analytics.google.com).
                     Карта України зі сторінки [CARTO](https://murahoid.carto.com/tables/ukr_adm1_1/public).
                     Інформація про кількість лікарняних ліжкок зі сторінки [Державна Служба Статистики України](http://www.ukrstat.gov.ua/druk/publicat/kat_u/2018/zb/06/zb_zoz_17.pdf).
